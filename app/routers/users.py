@@ -12,9 +12,9 @@ def get_db():
     finally:
         db.close()
 
-@router.post("/register-user")
-def register_user(name: str, email: str, mobile_number: str, hashed_password: str, db: Session = Depends(get_db)):
-    user = create_user(db, name, email, mobile_number, hashed_password)
+@router.post("/register")
+def register_user(name: str, email: str, mobile_number: str, password: str, db: Session = Depends(get_db)):
+    user = create_user(db, name, email, mobile_number, password)
     return {"message": "User registered successfully", "user": user}
 
 @router.get("/get-user-by-email")

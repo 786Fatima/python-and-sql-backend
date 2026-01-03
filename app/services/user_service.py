@@ -1,30 +1,25 @@
 from sqlalchemy.orm import Session
 from app.models.user import User
+from app.core.security import hash_password
 
 def create_user(
     db: Session,
     name: str,
     email: str,
     mobile_number: str,
-    hashed_password: str
+    password: str
 ):
     try:
         user = User(
             name=name,
             email=email,
             mobile_number=mobile_number,
-            hashed_password=hashed_password
+            hashed_password=hash_password(password)
         )
 
         db.add(user)
-        db.commit()   # ONE commit
-        db.refresh(user)
-
+        db.commit()  
         return user
-
-    # except IntegrityError:
-    #     db.rollback()
-    #     raise Exception("Email or mobile number already exists")
 
     except Exception as e:
         db.rollback()
