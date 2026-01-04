@@ -56,3 +56,11 @@ def delete_product(db: Session, product_id: int):
     db.delete(product)
     db.commit()
     return {"message": "Product deleted successfully"}
+
+
+def get_out_of_stock_products(db: Session):
+    return (
+        db.query(Product)
+        .filter(Product.stock <= 0)
+        .all()
+    )

@@ -4,9 +4,9 @@ import phonenumbers
 
 
 class UserBase(BaseModel):
-    name: Optional[str] = Field(None, min_length=2, max_length=100)
-    email: Optional[EmailStr] = None
-    mobileNumber: Optional[str] = None
+    name: str = Field(..., min_length=3, max_length=100)
+    email: EmailStr
+    mobileNumber: str
 
     @validator('mobileNumber')
     def validate_mobile(cls, v):
@@ -22,10 +22,7 @@ class UserBase(BaseModel):
             raise ValueError("Invalid phone number")
 
 
-class UserCreate(UserBase):
-    name: str 
-    email: EmailStr 
-    mobileNumber: str 
+class UserCreate(UserBase): 
     password: str = Field(
         min_length=8,
         max_length=128,

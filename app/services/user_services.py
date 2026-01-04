@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
-
-from app.models.user import User
+from sqlalchemy.sql import func
+from app.models import User, Order, OrderItem, OrderStatus
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import hash_password
 
@@ -64,25 +64,36 @@ def get_user_by_id(db: Session, user_id: int):
     return user
 
 
-def update_user(db: Session, user_id: int, user: UserUpdate):
-    db_user = db.query(User).filter(User.id == user_id).first()
+def update_user(db: Session, user_id: int, data: UserUpdate):
+    user = db.query(User).filter(User.id == user_id).first()
 
-    if not db_user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="User not found"
-        )
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-    if user.name is not None:
-        db_user.name = user.name
+    # check email duplicacy
+    if data.email and data.email != user.email:
+        exists = db.query(User).filter(
+            User.email == data.email,
+            User.id != user_id
+        ).first()
+        if exists:
+            raise HTTPException(409, "Email already exists")
+        user.email = data.email
 
-    if user.mobileNumber is not None:
-        db_user.mobile_number = user.mobileNumber
+    # check mobile number duplicacy
+    if data.mobileNumber:
+        if data.mobileNumber != user.mobile_number:
+            exists = db.query(User).filter(
+                User.mobile_number == data.mobileNumber,
+                User.id != user_id
+            ).first()
+            if exists:
+                raise HTTPException(409, "Mobile number already exists")
+            user.mobile_number = data.mobileNumber
 
     db.commit()
-    db.refresh(db_user)
-    return db_user
-
+    db.refresh(user)
+    return user
 
 def delete_user(db: Session, user_id: int):
     user = db.query(User).filter(User.id == user_id).first()
@@ -96,3 +107,23 @@ def delete_user(db: Session, user_id: int):
     db.delete(user)
     db.commit()
     return {"message": "User deleted successfully"}
+
+def top_users_by_spending(db: Session, limit: int = 10):
+    result = (
+        db.query(
+            User.id.label("user_id"),
+            User.name,
+            User.email,
+            func.sum(OrderItem.quantity * OrderItem.price)
+            .label("total_spent")
+        )
+        .join(Order, Order.user_id == User.id)
+        .join(OrderItem, OrderItem.order_id == Order.id)
+        .filter(Order.status == OrderStatus.PAID)
+        .group_by(User.id, User.name, User.email)
+        .order_by(func.sum(OrderItem.quantity * OrderItem.price).desc())
+        .limit(limit)
+        .all()
+    )
+
+    return result

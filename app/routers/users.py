@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 from app.database import SessionLocal
 from app.schemas.user import UserCreate, UserUpdate
-from app.services.user_services import create_user, get_all_users, get_user_by_id, update_user, delete_user
+from app.services.user_services import create_user, get_all_users, get_user_by_id, update_user, delete_user, top_users_by_spending
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -44,3 +44,7 @@ def update_user_by_id(
 @router.delete("/delete-user/{user_id}")
 def delete_user_by_id(user_id: int, db: Session = Depends(get_db)):
     return delete_user(db, user_id)
+
+@router.get("/top-users")
+def get_top_users(limit: int = Query(5, ge=1), db: Session = Depends(get_db)):
+    return top_users_by_spending(db)

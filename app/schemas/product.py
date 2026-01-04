@@ -13,8 +13,6 @@ class ProductCreate(ProductBase):
     pass
 
 
-class ProductUpdate(BaseModel):
-    name: Optional[str] = Field(None, min_length=2, max_length=255)
-    price: Optional[Decimal] = Field(None, gt=0)
-    stock: Optional[int] = Field(None, ge=0)
+class ProductUpdate(ProductBase):
+    pass
 

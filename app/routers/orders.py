@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
+from typing import List, Optional
+
 from app.database import SessionLocal
-from app.services.order_services import create_order
-from app.models import OrderStatus
+from app.schemas.order import OrderCreate, OrderUpdateStatus, OrderStatusEnum
+from app.services.order_services import create_order, get_all_orders, get_order_by_id, update_order_status, delete_order, get_orders_summary
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
@@ -13,29 +15,42 @@ def get_db():
     finally:
         db.close()
 
-# @router.post("/create")
-# def register_order(name: str, price: float, stock: int, db: Session = Depends(get_db)):
-#     order = create_order(db, name, email, mobile_number, password)
-#     return {"message": "Order registered successfully", "order": order}
-
-@router.get("/")
-def list_orders(
-    status: OrderStatus | None = None,
-    page: int = 1,
-    limit: int = 10,
+@router.post("/create")
+def create_new_order(
+    order: OrderCreate,
     db: Session = Depends(get_db)
 ):
-    query = db.query(Order)
-    if status:
-        query = query.filter(Order.status == status)
+    return create_order(db, order)
 
-    return query.offset((page - 1) * limit).limit(limit).all()
-# @router.get("/get-order-by-email")
-# def get_order_by_email(email: str, db: Session = Depends(get_db)):
-#     order = get_order_by_email(db, email)
-#     return {"order": order}   
 
-# @router.get("/get-all-orders")
-# def get_all_orders(db: Session = Depends(get_db)):
-#     orders = fetch_all_orders(db)
-#     return {"orders": orders}
+@router.get("/get-all-orders")
+def list_orders(
+    status: Optional[OrderStatusEnum] = None,
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=100),
+    db: Session = Depends(get_db)
+):
+    return get_all_orders(db, status, skip, limit)
+
+
+@router.get("/get-order-by-id/{order_id}")
+def get_order(order_id: int, db: Session = Depends(get_db)):
+    return get_order_by_id(db, order_id)
+
+
+@router.put("/update-order-status/{order_id}")
+def update_status(
+    order_id: int,
+    status: OrderUpdateStatus,
+    db: Session = Depends(get_db)
+):
+    return update_order_status(db, order_id, status)
+
+
+@router.delete("/delete-order/{order_id}")
+def delete_existing_order(order_id: int, db: Session = Depends(get_db)):
+    return delete_order(db, order_id)
+
+@router.get("/final-summary")
+def orders_summary(db: Session = Depends(get_db)):
+    return get_orders_summary(db)

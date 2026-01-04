@@ -5,7 +5,7 @@ from typing import List
 from app.database import SessionLocal
 from app.schemas.product import ProductCreate, ProductUpdate
 
-from app.services.product_services import create_product, get_all_products, get_product_by_id, update_product, delete_product
+from app.services.product_services import create_product, get_all_products, get_product_by_id, update_product, delete_product, get_out_of_stock_products
 
 
 router = APIRouter(prefix="/products", tags=["Products"])
@@ -58,3 +58,7 @@ def delete_existing_product(
     db: Session = Depends(get_db)
 ):
     return delete_product(db, product_id)
+
+@router.get("/out-of-stock")
+def out_of_stock_products(db: Session = Depends(get_db)):
+    return get_out_of_stock_products(db)
