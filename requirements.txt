@@ -1,9 +1,8 @@
 fastapi
 uvicorn
+pyodbc
 sqlalchemy
-psycopg2-binary
 alembic
-python-jose
 passlib[bcrypt]
-python-dotenv
 pydantic
+phonenumbers

@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.services.order_service import create_order
+from app.services.order_services import create_order
+from app.models import OrderStatus
 
 router = APIRouter(prefix="/orders", tags=["Orders"])
 
