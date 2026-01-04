@@ -13,6 +13,8 @@
 - Install dependencies:
   `pip install -r requirements.txt`
 
+- Install bcrypt with the declared version bcrypt==4.1.3 only as it may cause error.
+
 - In case of any updates run:
   `python -m alembic revision --autogenerate -m "update comment"`, then
   `python -m alembic upgrade head`
