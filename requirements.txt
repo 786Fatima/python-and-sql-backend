@@ -4,5 +4,7 @@ pyodbc
 sqlalchemy
 alembic
 passlib[bcrypt]
+bcrypt
 pydantic
+python-dotenv
 phonenumbers
